@@ -1,7 +1,8 @@
 package com.example.contoller;
 
-import com.example.model.entity.Post;
+import com.example.model.entity.Comment;
 import com.example.model.enums.SortType;
+import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,35 +18,35 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/v1/posts")
+@RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
-public class PostController {
+public class CommentController {
+
+    public final CommentRepository commentRepository;
+
     public final PostRepository postRepository;
 
     @GetMapping
-    public List<Post> getPosts(@RequestParam(required = false) final SortType sort) {
-        return postRepository.findAll();
+    public List<Comment> getComments(@RequestParam(required = false) final SortType sort) {
+        return commentRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public Optional<Post> getPost(@PathVariable final Long id) {
-        return postRepository.findById(id);
+    public Optional<Comment> getComment(@PathVariable final Long id) {
+        return commentRepository.findById(id);
     }
 
     @PostMapping
-    public Post addPost(@RequestBody final NewPostRequest newPostRequest) {
-        return postRepository.save(Post.builder()
-                .name(newPostRequest.name())
-                .description(newPostRequest.description())
-                .build());
+    public void addComment(@RequestBody final NewCommentRequest request) {
+        commentRepository.save(Comment.builder().comment(request.name()).post(postRepository.findById(request.postId()).orElseThrow()).build());
     }
 
     @DeleteMapping("/{id}")
-    public void deletePost(@PathVariable final Long id) {
-        postRepository.deleteById(id);
+    public void deleteComment(@PathVariable final Long id) {
+        commentRepository.deleteById(id);
     }
 
-    record NewPostRequest(String name, String description) {
+    record NewCommentRequest(String name, Long postId) {
 
     }
 }

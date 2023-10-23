@@ -1,39 +1,32 @@
 package com.example.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 
 @Entity
-public class Post {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    private String name;
+    private String comment;
 
-    private String description;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
+    private Post post;
 
-    @Builder.Default
-    @OneToMany(cascade = CascadeType.ALL,
-            mappedBy = "post",
-            fetch = FetchType.EAGER)
-    private List<Comment> comments = new ArrayList<>();
 }
-

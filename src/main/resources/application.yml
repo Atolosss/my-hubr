@@ -1,22 +1,22 @@
 server:
-  ports: 8080
+  ports: 3000
   shutdown: graceful
 
 
-#logging:
-#  level:
-#    root: DEBUG
+logging:
+  level:
+    root: DEBUG
 
-#spring:
-#  datasource:
-#    url: jdbc:postgresql://localhost:5332/postgres
-#    username: postgres
-#    password: postgres
-#  jpa:
-#    hibernate:
-#      ddl-auto: create-drop
-#    properties:
-#      hibernate:
-#        dialect: org.hibernate.dialect.PostgreSQLDialect
-#        format_sql: true
-#    show-sql: true
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5332/postgres
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: true
