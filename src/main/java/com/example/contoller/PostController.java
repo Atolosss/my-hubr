@@ -1,7 +1,7 @@
 package com.example.contoller;
 
 import com.example.model.entity.Post;
-import com.example.model.enums.SortType;
+import com.example.model.enums.PostSortType;
 import com.example.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +23,7 @@ public class PostController {
     public final PostRepository postRepository;
 
     @GetMapping
-    public List<Post> getPosts(@RequestParam(required = false) final SortType sort) {
+    public List<Post> getPosts(@RequestParam(required = false) final PostSortType sort) {
         return postRepository.findAll();
     }
 

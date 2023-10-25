@@ -1,20 +1,22 @@
 server:
-  ports: 3000
+  ports: 8080
   shutdown: graceful
 
 
 logging:
   level:
-    root: DEBUG
+    root: INFO
 
 spring:
+  main:
+    banner-mode: off
   datasource:
-    url: jdbc:postgresql://localhost:5332/postgres
+    url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

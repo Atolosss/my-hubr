@@ -1,9 +1,9 @@
 package com.example.contoller;
 
-import com.example.model.entity.Comment;
-import com.example.model.enums.SortType;
-import com.example.repository.CommentRepository;
-import com.example.repository.PostRepository;
+import com.example.model.dto.AddCommentRq;
+import com.example.model.dto.CommentRs;
+import com.example.model.enums.CommentSortType;
+import com.example.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,38 +15,31 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/comments")
 @RequiredArgsConstructor
 public class CommentController {
-
-    public final CommentRepository commentRepository;
-
-    public final PostRepository postRepository;
+    private final CommentService commentService;
 
     @GetMapping
-    public List<Comment> getComments(@RequestParam(required = false) final SortType sort) {
-        return commentRepository.findAll();
+    public List<CommentRs> getAll(@RequestParam(required = false) final CommentSortType sort) {
+        return commentService.findAll(sort);
     }
 
     @GetMapping("/{id}")
-    public Optional<Comment> getComment(@PathVariable final Long id) {
-        return commentRepository.findById(id);
+    public CommentRs get(@PathVariable final Long id) {
+        return commentService.findById(id);
     }
 
     @PostMapping
-    public void addComment(@RequestBody final NewCommentRequest request) {
-        commentRepository.save(Comment.builder().comment(request.name()).post(postRepository.findById(request.postId()).orElseThrow()).build());
+    public CommentRs add(@RequestBody final AddCommentRq request) {
+        return commentService.save(request);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteComment(@PathVariable final Long id) {
-        commentRepository.deleteById(id);
+    public void delete(@PathVariable final Long id) {
+        commentService.deleteById(id);
     }
 
-    record NewCommentRequest(String name, Long postId) {
-
-    }
 }

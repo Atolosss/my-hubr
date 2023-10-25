@@ -1,0 +1,16 @@
+package com.example.model.enums;
+
+import com.example.model.entity.Comment;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+import java.util.Comparator;
+
+@RequiredArgsConstructor
+@Getter
+public enum CommentSortType {
+    VALUE(Comparator.comparing(Comment::getValue)),
+    ID(Comparator.comparingLong(Comment::getId));
+
+    private final Comparator<Comment> comparator;
+}
