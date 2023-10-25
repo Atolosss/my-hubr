@@ -2,7 +2,6 @@ package com.example.model.entity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,8 +31,7 @@ public class Post {
 
     @Builder.Default
     @OneToMany(cascade = CascadeType.ALL,
-            mappedBy = "post",
-            fetch = FetchType.EAGER)
+            mappedBy = "post")
     private List<Comment> comments = new ArrayList<>();
 }
 
