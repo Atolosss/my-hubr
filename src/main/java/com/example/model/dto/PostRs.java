@@ -15,4 +15,5 @@ public class PostRs {
     private String name;
 
     private String description;
+
 }

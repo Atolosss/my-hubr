@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -25,13 +26,21 @@ public class PostController {
 
     @GetMapping
     public List<PostRs> getPosts(@RequestParam(required = false) final PostSortType sort) {
-        return postService.getPosts(sort);
+        if (sort != null) {
+            return postService.getSortedPosts(sort);
+        }
+        return postService.getPosts();
     }
 
     @GetMapping("/{id}")
     public PostRs getPost(@PathVariable final Long id) {
 
         return postService.getPost(id);
+    }
+
+    @GetMapping("/{startDate},{endDate}")
+    public List<PostRs> getPostsBetweenDates(@PathVariable final LocalDate startDate,@PathVariable final LocalDate endDate) {
+        return postService.getPostsBetweenDates(startDate, endDate);
     }
 
     @PostMapping

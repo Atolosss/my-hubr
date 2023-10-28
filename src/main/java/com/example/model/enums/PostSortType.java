@@ -9,8 +9,10 @@ import java.util.Comparator;
 @RequiredArgsConstructor
 @Getter
 public enum PostSortType {
+
     NAME(Comparator.comparing(Post::getName)),
     ID(Comparator.comparingLong(Post::getId));
 
+
     private final Comparator<Post> comparator;
-}
+    }

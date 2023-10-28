@@ -15,6 +15,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,6 +30,8 @@ public class Comment {
     private Long id;
 
     private String value;
+
+    private LocalDateTime createDateTime;
 
     @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL)

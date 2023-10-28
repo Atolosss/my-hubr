@@ -13,6 +13,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +32,8 @@ public class Post {
     private String name;
 
     private String description;
+
+    private LocalDate createDate;
 
     @Builder.Default
     @ToString.Exclude
