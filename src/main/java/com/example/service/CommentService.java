@@ -21,8 +21,18 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
 
+    public List<CommentRs> findAll() {
+        return commentRepository.findAll()
+                .stream()
+                .map(chatMapper::toCommentRq)
+                .toList();
+    }
+
     public List<CommentRs> findAll(final CommentSortType sort) {
-        return chatMapper.commentRsList(commentRepository.findAll(sort));
+        return commentRepository.findAll().stream()
+                .sorted(sort.getComparator())
+                .map(chatMapper::toCommentRq)
+                .toList();
     }
 
     public CommentRs findById(final Long id) {
@@ -31,8 +41,9 @@ public class CommentService {
                 .orElseThrow(() -> new ServiceException(ErrorCode.ERROR_CODE_0002, id));
     }
 
+    // Todo: что то не так с маппингом связи
     public CommentRs save(final AddCommentRq request) {
-        Comment comment = postRepository.findById(request.getPostId())
+        final Comment comment = postRepository.findById(request.getPostId())
                 .map(post -> chatMapper.toComment(request, post))
                 .orElseThrow(() -> new ServiceException(ErrorCode.ERROR_CODE_0001, request.getPostId()));
 

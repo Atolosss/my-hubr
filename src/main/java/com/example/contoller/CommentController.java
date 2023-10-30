@@ -22,9 +22,12 @@ import java.util.List;
 public class CommentController {
     private final CommentService commentService;
 
-    @GetMapping
+    @GetMapping()
     public List<CommentRs> getAll(@RequestParam(required = false) final CommentSortType sort) {
-        return commentService.findAll(sort);
+        if(sort!=null) {
+            return commentService.findAll(sort);
+        }
+        return commentService.findAll();
     }
 
     @GetMapping("/{id}")

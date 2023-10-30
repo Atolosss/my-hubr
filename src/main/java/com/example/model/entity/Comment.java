@@ -15,7 +15,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -29,12 +29,13 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    private String value;
+    private String comment;
 
-    private LocalDateTime createDateTime;
+    @Builder.Default
+    private LocalDate createDate = LocalDate.now();
 
     @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "post_id", foreignKey = @ForeignKey(name = "fk_comment_post"))
-    private Post post;
+    private PostToChat postToChat;
 }

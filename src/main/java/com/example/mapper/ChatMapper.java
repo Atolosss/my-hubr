@@ -5,24 +5,19 @@ import com.example.model.dto.AddPostRq;
 import com.example.model.dto.CommentRs;
 import com.example.model.dto.PostRs;
 import com.example.model.entity.Comment;
-import com.example.model.entity.Post;
+import com.example.model.entity.PostToChat;
 import org.mapstruct.Mapper;
-
-import java.util.List;
+import org.mapstruct.Mapping;
 
 @Mapper
 public interface ChatMapper {
-    Comment toComment(AddCommentRq dto, Post post);
-
+    Comment toComment(AddCommentRq dto, PostToChat postToChat);
+    @Mapping(target = "value", source = "comment")
+    @Mapping(target = "id", source = "postToChat.id")
     CommentRs toCommentRq(Comment entity);
+    PostToChat toPost(AddPostRq dto);
 
-    List<CommentRs> commentRsList(List<Comment> comments);
+    PostRs toPostRs(PostToChat entity);
 
-    Post toPost(AddPostRq dto);
 
-    PostRs toPostRs(Post entity);
-
-    List<PostRs> postRsList(List<Post> posts);
-
-    List<Post> postList(List<PostRs> postRsList);
 }

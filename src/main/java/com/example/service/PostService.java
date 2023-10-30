@@ -5,7 +5,7 @@ import com.example.exceptions.ServiceException;
 import com.example.mapper.ChatMapper;
 import com.example.model.dto.AddPostRq;
 import com.example.model.dto.PostRs;
-import com.example.model.entity.Post;
+import com.example.model.entity.PostToChat;
 import com.example.model.enums.PostSortType;
 import com.example.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,18 +23,25 @@ public class PostService {
     private final ChatMapper chatMapper;
 
     public List<PostRs> getSortedPosts(final PostSortType sort) {
-        return chatMapper.postRsList(postRepository.findAll());
+        return postRepository.findAll()
+                .stream()
+                .sorted(sort.getComparator())
+                .map(chatMapper::toPostRs)
+                .collect(Collectors.toList());
     }
 
     public List<PostRs> getPosts() {
-        return chatMapper.postRsList(postRepository.findAll());
-    }
-
-    public List<PostRs> getPostsBetweenDates(LocalDate startDate, LocalDate endDate) {
         return postRepository.findAll()
                 .stream()
-                .filter(post -> !post.getCreateDate().isBefore(startDate) &&
-                        !post.getCreateDate().isAfter(endDate))
+                .map(chatMapper::toPostRs)
+                .toList();
+    }
+
+    public List<PostRs> getPostsBetweenDates(final LocalDate startDate, final LocalDate endDate) {
+        return postRepository.findAll()
+                .stream()
+                .filter(post -> !post.getCreateDate().isBefore(startDate)
+                        && !post.getCreateDate().isAfter(endDate))
                 .map(chatMapper::toPostRs)
                 .collect(Collectors.toList());
     }
@@ -45,9 +53,9 @@ public class PostService {
     }
 
     public PostRs save(final AddPostRq addPost) {
-        Post post = chatMapper.toPost(addPost);
-        postRepository.save(post);
-        return chatMapper.toPostRs(post);
+        final PostToChat postToChat = chatMapper.toPost(addPost);
+        postRepository.save(postToChat);
+        return chatMapper.toPostRs(postToChat);
     }
 
     public void deleteById(final Long id) {

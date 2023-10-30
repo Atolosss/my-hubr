@@ -39,7 +39,7 @@ public class PostController {
     }
 
     @GetMapping("/{startDate},{endDate}")
-    public List<PostRs> getPostsBetweenDates(@PathVariable final LocalDate startDate,@PathVariable final LocalDate endDate) {
+    public List<PostRs> getPostsBetweenDates(@PathVariable final LocalDate startDate, @PathVariable final LocalDate endDate) {
         return postService.getPostsBetweenDates(startDate, endDate);
     }
 

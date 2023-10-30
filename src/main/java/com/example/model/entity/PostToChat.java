@@ -24,7 +24,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "post")
-public class Post {
+public class PostToChat {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -33,11 +33,12 @@ public class Post {
 
     private String description;
 
-    private LocalDate createDate;
+    @Builder.Default
+    private LocalDate createDate = LocalDate.now();
 
     @Builder.Default
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "postToChat")
     private List<Comment> comments = new ArrayList<>();
 }
 
