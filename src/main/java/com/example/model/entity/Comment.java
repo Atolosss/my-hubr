@@ -29,7 +29,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
-    private String comment;
+    private String value;
 
     @Builder.Default
     private LocalDate createDate = LocalDate.now();

@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.exceptions.ErrorCode;
 import com.example.exceptions.ServiceException;
 import com.example.mapper.ChatMapper;
 import com.example.model.dto.AddCommentRq;
@@ -24,35 +23,35 @@ public class CommentService {
     public List<CommentRs> findAll() {
         return commentRepository.findAll()
                 .stream()
-                .map(chatMapper::toCommentRq)
+                .map(chatMapper::toCommentRs)
                 .toList();
     }
 
     public List<CommentRs> findAll(final CommentSortType sort) {
         return commentRepository.findAll().stream()
                 .sorted(sort.getComparator())
-                .map(chatMapper::toCommentRq)
+                .map(chatMapper::toCommentRs)
                 .toList();
     }
 
     public CommentRs findById(final Long id) {
         return commentRepository.findById(id)
-                .map(chatMapper::toCommentRq)
-                .orElseThrow(() -> new ServiceException(ErrorCode.ERROR_CODE_0002, id));
+                .map(chatMapper::toCommentRs)
+                .orElseThrow(() -> new ServiceException("Comment not found exception with id"));
     }
 
-    // Todo: что то не так с маппингом связи
     public CommentRs save(final AddCommentRq request) {
         final Comment comment = postRepository.findById(request.getPostId())
                 .map(post -> chatMapper.toComment(request, post))
-                .orElseThrow(() -> new ServiceException(ErrorCode.ERROR_CODE_0001, request.getPostId()));
+                .orElseThrow(() -> new ServiceException("Post not found exception with id"));
 
         commentRepository.save(comment);
 
-        return chatMapper.toCommentRq(comment);
+        return chatMapper.toCommentRs(comment);
     }
 
     public void deleteById(final Long id) {
         commentRepository.deleteById(id);
     }
+
 }

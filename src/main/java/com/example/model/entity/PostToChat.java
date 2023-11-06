@@ -38,7 +38,7 @@ public class PostToChat {
 
     @Builder.Default
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "postToChat")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "postToChat", orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
 }
 

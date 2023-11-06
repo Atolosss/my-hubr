@@ -9,7 +9,7 @@ import java.util.Comparator;
 @RequiredArgsConstructor
 @Getter
 public enum CommentSortType {
-    COMMENT(Comparator.comparing(Comment::getComment)),
+    COMMENT(Comparator.comparing(Comment::getValue)),
     ID(Comparator.comparingLong(Comment::getId));
 
     private final Comparator<Comment> comparator;

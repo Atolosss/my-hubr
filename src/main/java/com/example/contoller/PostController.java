@@ -5,6 +5,7 @@ import com.example.model.dto.PostRs;
 import com.example.model.enums.PostSortType;
 import com.example.service.PostService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,13 +34,16 @@ public class PostController {
     }
 
     @GetMapping("/{id}")
-    public PostRs getPost(@PathVariable final Long id) {
-
+    public PostRs getPost(@PathVariable final Long id, @RequestParam(value = "includeComments", required = false, defaultValue = "false") final boolean includeComments) {
+        if (includeComments) {
+            return postService.getPostWithComments(id);
+        }
         return postService.getPost(id);
     }
 
-    @GetMapping("/{startDate},{endDate}")
-    public List<PostRs> getPostsBetweenDates(@PathVariable final LocalDate startDate, @PathVariable final LocalDate endDate) {
+    @GetMapping("/")
+    public List<PostRs> getPostsBetweenDates(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
+                                             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate) {
         return postService.getPostsBetweenDates(startDate, endDate);
     }
 

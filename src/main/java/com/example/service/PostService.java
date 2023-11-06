@@ -1,6 +1,5 @@
 package com.example.service;
 
-import com.example.exceptions.ErrorCode;
 import com.example.exceptions.ServiceException;
 import com.example.mapper.ChatMapper;
 import com.example.model.dto.AddPostRq;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,7 +47,7 @@ public class PostService {
     public PostRs getPost(final Long id) {
         return postRepository.findById(id)
                 .map(chatMapper::toPostRs)
-                .orElseThrow(() -> new ServiceException(ErrorCode.ERROR_CODE_0001, id));
+                .orElseThrow(() -> new ServiceException("Post not found exception with id"));
     }
 
     public PostRs save(final AddPostRq addPost) {
@@ -60,5 +58,15 @@ public class PostService {
 
     public void deleteById(final Long id) {
         postRepository.deleteById(id);
+    }
+
+    public PostRs getPostWithComments(final Long id) {
+        final PostToChat postToChat = postRepository.findById(id)
+                .orElseThrow(() -> new ServiceException("Comment not found exception with id"));
+
+        final PostRs postRs = chatMapper.toPostRs(postToChat);
+
+        postRs.setComments(chatMapper.commentRsList(postToChat.getComments()));
+        return postRs;
     }
 }
