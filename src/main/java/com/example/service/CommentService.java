@@ -54,4 +54,14 @@ public class CommentService {
         commentRepository.deleteById(id);
     }
 
+    public CommentRs update(final Long id, final AddCommentRq request) {
+        final Comment comment = postRepository.findById(request.getPostId())
+                .map(post -> chatMapper.toComment(request, post))
+                .orElseThrow(() -> new ServiceException("Post not found exception with id"));
+
+        comment.setId(id);
+        commentRepository.save(comment);
+
+        return chatMapper.toCommentRs(comment);
+    }
 }
