@@ -95,11 +95,6 @@
                             <version>0.1.0</version>
                         </dependency>
                     </annotationProcessorPaths>
-                    <compilerArgs>
-                        <compilerArg>
-                            -Amapstruct.defaultComponentModel=spring
-                        </compilerArg>
-                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

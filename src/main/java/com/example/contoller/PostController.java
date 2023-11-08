@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -26,34 +26,32 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping
-    public List<PostRs> getPosts(@RequestParam(required = false) final PostSortType sort) {
-        if (sort != null) {
-            return postService.getSortedPosts(sort);
-        }
-        return postService.getPosts();
+    public List<PostRs> getPosts(
+        @RequestParam(required = false) final PostSortType sort) {
+        return postService.getSortedPosts(sort);
     }
 
     @GetMapping("/{id}")
-    public PostRs getPost(@PathVariable final Long id, @RequestParam(value = "includeComments", required = false, defaultValue = "false") final boolean includeComments) {
-        if (includeComments) {
-            return postService.getPostWithComments(id);
-        }
-        return postService.getPost(id);
+    public PostRs getPost(
+        @PathVariable final Long id,
+        @RequestParam(value = "includeComments", required = false, defaultValue = "true") final boolean includeComments) {
+        return postService.getPost(id, includeComments);
     }
 
     @GetMapping("/")
-    public List<PostRs> getPostsBetweenDates(@RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate startDate,
-                                             @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) final LocalDate endDate) {
+    public List<PostRs> getPostsBetweenDates(
+        @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime startDate,
+        @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime endDate) {
         return postService.getPostsBetweenDates(startDate, endDate);
     }
 
     @PostMapping
-    public PostRs addPost(@RequestBody final AddPostRq addPostRq) {
+    public PostRs add(@RequestBody final AddPostRq addPostRq) {
         return postService.save(addPostRq);
     }
 
     @DeleteMapping("/{id}")
-    public void deletePost(@PathVariable final Long id) {
+    public void delete(@PathVariable final Long id) {
         postService.deleteById(id);
     }
 

@@ -1,6 +1,6 @@
 package com.example.model.enums;
 
-import com.example.model.entity.PostToChat;
+import com.example.model.entity.Post;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -10,9 +10,9 @@ import java.util.Comparator;
 @Getter
 public enum PostSortType {
 
-    NAME(Comparator.comparing(PostToChat::getName)),
+    NAME(Comparator.comparing(Post::getName)),
 
-    ID(Comparator.comparingLong(PostToChat::getId));
+    ID(Comparator.comparingLong(Post::getId));
 
-    private final Comparator<PostToChat> comparator;
+    private final Comparator<Post> comparator;
 }

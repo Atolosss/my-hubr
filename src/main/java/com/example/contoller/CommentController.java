@@ -2,6 +2,7 @@ package com.example.contoller;
 
 import com.example.model.dto.AddCommentRq;
 import com.example.model.dto.CommentRs;
+import com.example.model.dto.UpdateCommentRq;
 import com.example.model.enums.CommentSortType;
 import com.example.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,7 @@ public class CommentController {
 
     @GetMapping
     public List<CommentRs> getAll(@RequestParam(required = false) final CommentSortType sort) {
-        if (sort != null) {
-            return commentService.findAll(sort);
-        }
-        return commentService.findAll();
+        return commentService.findAll(sort);
     }
 
     @GetMapping("/{id}")
@@ -41,9 +39,9 @@ public class CommentController {
         return commentService.save(request);
     }
 
-    @PutMapping("/{id}")
-    public CommentRs update(@PathVariable final Long id, @RequestBody final AddCommentRq request) {
-        return commentService.update(id, request);
+    @PutMapping
+    public CommentRs update(@RequestBody final UpdateCommentRq request) {
+        return commentService.update(request);
     }
 
     @DeleteMapping("/{id}")
