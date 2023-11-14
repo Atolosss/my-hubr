@@ -34,7 +34,7 @@ public class PostController {
     @GetMapping("/{id}")
     public PostRs getPost(
         @PathVariable final Long id,
-        @RequestParam(value = "includeComments", required = false, defaultValue = "true") final boolean includeComments) {
+        @RequestParam(value = "includeComments", required = false, defaultValue = "false") final boolean includeComments) {
         return postService.getPost(id, includeComments);
     }
 
