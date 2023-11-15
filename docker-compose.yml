@@ -2,8 +2,9 @@ version: '3.5'
 
 services:
   db:
-    container_name: postgres_amigo
+    container_name: postgres_container
     image: postgres
+    command: [ "postgres", "-c", "log_statement=all" ]
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -12,6 +13,21 @@ services:
       - postgres:/data/postgres
     ports:
       - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@mymail.ru
+      PGADMIN_DEFAULT_PASSWORD: adminpassword
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "80:80"
     networks:
       - postgres
     restart: unless-stopped
