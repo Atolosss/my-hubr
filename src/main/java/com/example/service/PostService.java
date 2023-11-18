@@ -1,12 +1,12 @@
 package com.example.service;
 
+import com.example.constant.ErrorCode;
 import com.example.exceptions.ServiceException;
+import com.example.mapper.PostMapper;
 import com.example.model.dto.AddPostRq;
 import com.example.model.dto.PostRs;
-import com.example.model.enums.PostSortType;
-import com.example.constant.ErrorCode;
-import com.example.mapper.PostMapper;
 import com.example.model.entity.Post;
+import com.example.model.enums.PostSortType;
 import com.example.repository.PostRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,11 @@ public class PostService {
         final Post post = postRepository.findById(id)
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
 
-        return postMapper.toPostRs(post);
+        if (!includeComments) {
+            return postMapper.toPostRsWithoutComments(postMapper.toPostWithoutComments(post));
+        } else {
+            return postMapper.toPostRs(post);
+        }
     }
 
     public PostRs save(final AddPostRq addPost) {

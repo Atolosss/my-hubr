@@ -1,6 +1,6 @@
 package com.example.support;
 
-import com.example.initializer.PostgreSQLInitializer;
+import com.example.initializer.PostgreSqlInitializer;
 import com.example.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,7 +12,7 @@ import java.util.Set;
 
 @ActiveProfiles("test")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = PostgreSQLInitializer.class)
+@ContextConfiguration(initializers = PostgreSqlInitializer.class)
 public class IntegrationTestBase extends DatabaseAwareTestBase {
     @LocalServerPort
     protected int localPort;

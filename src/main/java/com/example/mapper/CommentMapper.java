@@ -1,9 +1,9 @@
 package com.example.mapper;
 
-import com.example.model.entity.Comment;
 import com.example.model.dto.AddCommentRq;
 import com.example.model.dto.CommentRs;
 import com.example.model.dto.UpdateCommentRq;
+import com.example.model.entity.Comment;
 import com.example.model.entity.Post;
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;

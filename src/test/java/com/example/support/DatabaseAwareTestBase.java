@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles({"test"})
+@ActiveProfiles("test")
 public abstract class DatabaseAwareTestBase {
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -28,21 +28,16 @@ public abstract class DatabaseAwareTestBase {
 
     @BeforeEach
     void check() {
-        getTables().stream()
-            .map(this::countRecordsInTable)
-            .forEach(count -> assertThat(count).isZero());
+        getTables().stream().map(this::countRecordsInTable).forEach(count -> assertThat(count).isZero());
     }
 
     @AfterEach
     void truncateTables() {
-        jdbcTemplate.execute("truncate table " + getTables().stream()
-            .map(this::tableNameWithSchema)
-            .collect(Collectors.joining(", ")));
+        jdbcTemplate.execute("TRUNCATE TABLE " + getTables().stream().map(this::tableNameWithSchema).collect(Collectors.joining(", ")) + " RESTART IDENTITY CASCADE");
     }
 
     protected long countRecordsInTable(final String tableName) {
-        final var queryResult = jdbcTemplate.queryForObject(
-            "select count(*) from " + tableNameWithSchema(tableName), Long.class);
+        final var queryResult = jdbcTemplate.queryForObject("select count(*) from " + tableNameWithSchema(tableName), Long.class);
         return Objects.requireNonNullElse(queryResult, 0L);
     }
 

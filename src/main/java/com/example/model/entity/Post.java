@@ -46,7 +46,7 @@ public class Post extends BaseEntity {
 
     @Builder.Default
     @ToString.Exclude
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post", orphanRemoval = true, fetch = FetchType.EAGER)
     private List<Comment> comments = new ArrayList<>();
 }
 

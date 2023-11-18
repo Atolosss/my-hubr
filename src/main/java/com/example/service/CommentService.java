@@ -1,13 +1,13 @@
 package com.example.service;
 
+import com.example.constant.ErrorCode;
 import com.example.exceptions.ServiceException;
 import com.example.mapper.CommentMapper;
+import com.example.model.dto.AddCommentRq;
+import com.example.model.dto.CommentRs;
 import com.example.model.dto.UpdateCommentRq;
 import com.example.model.entity.Comment;
 import com.example.model.enums.CommentSortType;
-import com.example.constant.ErrorCode;
-import com.example.model.dto.AddCommentRq;
-import com.example.model.dto.CommentRs;
 import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import jakarta.annotation.Nullable;
@@ -41,6 +41,7 @@ public class CommentService {
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT, readOnly = false)
     public CommentRs save(final AddCommentRq request) {
         final Comment comment = postRepository.findById(request.getPostId())
             .map(post -> commentMapper.toComment(request, post))
