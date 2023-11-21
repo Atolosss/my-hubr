@@ -1,6 +1,7 @@
 package com.example.support;
 
 import com.example.initializer.PostgreSqlInitializer;
+import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +20,9 @@ public class IntegrationTestBase extends DatabaseAwareTestBase {
 
     @Autowired
     protected PostRepository postRepository;
+
+    @Autowired
+    protected CommentRepository commentRepository;
 
     @Override
     protected String getSchema() {

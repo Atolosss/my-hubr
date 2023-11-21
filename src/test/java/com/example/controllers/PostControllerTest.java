@@ -10,11 +10,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -55,12 +58,10 @@ class PostControllerTest extends IntegrationTestBase {
                 .name("name 1")
                 .comments(List.of())
                 .build());
-        postRepository.deleteById(1L);
     }
 
     @Test
     void getPostShouldWork() {
-
         final AddPostRq request = DataProvider.prepareAddPostRq().build();
         testRestTemplate.postForEntity("/api/v1/posts",
             request, PostRs.class);
@@ -74,8 +75,31 @@ class PostControllerTest extends IntegrationTestBase {
                 .name("name 1")
                 .comments(List.of())
                 .build());
+    }
 
-        postRepository.deleteById(1L);
+    @Test
+    void getPostsShouldWork() {
+        final AddPostRq request = DataProvider.prepareAddPostRq().build();
+        testRestTemplate.postForEntity("/api/v1/posts",
+            request, PostRs.class);
+
+        ResponseEntity<List<PostRs>> entity1 = testRestTemplate.exchange(
+            "/api/v1/posts",
+            HttpMethod.GET,
+            null,
+            new ParameterizedTypeReference<List<PostRs>>() {
+            });
+        List<PostRs> posts = new ArrayList<>();
+        posts.add(PostRs.builder()
+            .id(1L)
+            .description("desc 1")
+            .name("name 1")
+            .comments(List.of())
+            .build());
+
+        assertThat(entity1.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(entity1.getBody())
+            .isEqualTo(posts);
 
     }
 
