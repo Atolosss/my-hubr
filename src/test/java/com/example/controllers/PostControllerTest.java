@@ -5,19 +5,12 @@ import com.example.model.dto.PostRs;
 import com.example.model.entity.Post;
 import com.example.support.DataProvider;
 import com.example.support.IntegrationTestBase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,31 +18,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ActiveProfiles("test")
 class PostControllerTest extends IntegrationTestBase {
     @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
-    private TestRestTemplate testRestTemplate;
-
-    @BeforeEach
-    void beforeEach() {
-        restTemplateBuilder = new RestTemplateBuilder()
-            .rootUri("http://localhost:" + localPort);
-        testRestTemplate = new TestRestTemplate(restTemplateBuilder);
-    }
+    private WebTestClient webTestClient;
 
     @Test
     void addPostShouldWork() {
         final AddPostRq request = DataProvider.prepareAddPostRq().build();
-        final ResponseEntity<PostRs> entity = testRestTemplate.postForEntity("/api/v1/posts",
-            request, PostRs.class);
 
-        assertThat(entity)
-            .extracting(HttpEntity::getBody)
-            .isEqualTo(PostRs.builder()
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(PostRs.class)
+            .value(postRs -> assertThat(postRs).isEqualTo(PostRs.builder()
                 .id(1L)
                 .description("desc 1")
                 .name("name 1")
                 .comments(List.of())
-                .build());
+                .build()));
 
         assertThat(postRepository.findById(1L).get())
             .isEqualTo(Post.builder()
@@ -63,53 +48,52 @@ class PostControllerTest extends IntegrationTestBase {
     @Test
     void getPostShouldWork() {
         final AddPostRq request = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request, PostRs.class);
-        final ResponseEntity<PostRs> entity1 = testRestTemplate.getForEntity("/api/v1/posts/{id}", PostRs.class, 1);
 
-        assertThat(entity1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity1.getBody())
-            .isEqualTo(PostRs.builder()
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.get().uri("/api/v1/posts/{id}", 1L)
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(PostRs.class)
+            .value(postRs -> assertThat(postRs).isEqualTo(PostRs.builder()
                 .id(1L)
                 .description("desc 1")
                 .name("name 1")
                 .comments(List.of())
-                .build());
+                .build()));
     }
 
     @Test
     void getPostsShouldWork() {
         final AddPostRq request = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request, PostRs.class);
 
-        ResponseEntity<List<PostRs>> entity1 = testRestTemplate.exchange(
-            "/api/v1/posts",
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<PostRs>>() {
-            });
-        List<PostRs> posts = new ArrayList<>();
-        posts.add(PostRs.builder()
-            .id(1L)
-            .description("desc 1")
-            .name("name 1")
-            .comments(List.of())
-            .build());
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk();
 
-        assertThat(entity1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity1.getBody())
-            .isEqualTo(posts);
-
+        webTestClient.get().uri("/api/v1/posts")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBodyList(PostRs.class)
+            .value(posts -> assertThat(posts).hasSize(1));
     }
 
     @Test
     void deletePostShouldWork() {
         final AddPostRq request = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request, PostRs.class);
 
-        testRestTemplate.delete("/api/v1/posts/{id}", 1L);
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk();
+
+        webTestClient.delete().uri("/api/v1/posts/{id}", 1L)
+            .exchange()
+            .expectStatus().isOk();
 
         assertThat(postRepository.findById(1L)).isEmpty();
     }

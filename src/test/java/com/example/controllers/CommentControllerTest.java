@@ -8,19 +8,13 @@ import com.example.model.dto.UpdateCommentRq;
 import com.example.model.entity.Comment;
 import com.example.support.DataProvider;
 import com.example.support.IntegrationTestBase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,28 +23,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class CommentControllerTest extends IntegrationTestBase {
 
     @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
-    private TestRestTemplate testRestTemplate;
-
-    @BeforeEach
-    void beforeEach() {
-        restTemplateBuilder = new RestTemplateBuilder()
-            .rootUri("http://localhost:" + localPort);
-        testRestTemplate = new TestRestTemplate(restTemplateBuilder);
-    }
+    private WebTestClient webTestClient;
 
     @Test
     void addCommentShouldWork() {
         final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        final ResponseEntity<PostRs> entity1 = testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        final ResponseEntity<CommentRs> entity2 = testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+        final PostRs postRs = webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request1), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(PostRs.class)
+            .getResponseBody()
+            .blockFirst();
 
-        assertThat(entity2)
-            .extracting(HttpEntity::getBody)
+        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
+        final CommentRs commentRs = webTestClient.post().uri("/api/v1/comments")
+            .body(Mono.just(request2), AddCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
+
+        assertThat(commentRs)
             .isEqualTo(CommentRs.builder()
                 .id(1L)
                 .value("Hello")
@@ -60,24 +55,38 @@ public class CommentControllerTest extends IntegrationTestBase {
             .isEqualTo(Comment.builder()
                 .id(1L)
                 .value("Hello")
-                .post(postRepository.findById(entity1.getBody().getId()).get())
+                .post(postRepository.findById(postRs.getId()).get())
                 .build());
     }
 
     @Test
     void getCommentShouldWork() {
         final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request1), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(PostRs.class)
+            .getResponseBody()
+            .blockFirst();
+
         final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+        webTestClient.post().uri("/api/v1/comments")
+            .body(Mono.just(request2), AddCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
 
-        final ResponseEntity<CommentRs> entity2 = testRestTemplate.getForEntity("/api/v1/comments/{id}",
-            CommentRs.class, 1L);
+        final CommentRs commentRs = webTestClient.get().uri("/api/v1/comments/{id}", 1L)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
 
-        assertThat(entity2.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity2.getBody())
+        assertThat(commentRs)
             .isEqualTo(CommentRs.builder()
                 .id(1L)
                 .value("Hello")
@@ -87,38 +96,65 @@ public class CommentControllerTest extends IntegrationTestBase {
     @Test
     void getCommentsShouldWork() {
         final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request1), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(PostRs.class)
+            .getResponseBody()
+            .blockFirst();
+
         final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+        webTestClient.post().uri("/api/v1/comments")
+            .body(Mono.just(request2), AddCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
 
-        ResponseEntity<List<CommentRs>> entity1 = testRestTemplate.exchange(
-            "/api/v1/comments",
-            HttpMethod.GET,
-            null,
+        final ParameterizedTypeReference<List<CommentRs>> responseType =
             new ParameterizedTypeReference<List<CommentRs>>() {
-            });
-        List<CommentRs> comments = new ArrayList<>();
-        comments.add(CommentRs.builder()
-            .id(1L)
-            .value("Hello")
-            .build());
+            };
 
-        assertThat(entity1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity1.getBody())
-            .isEqualTo(comments);
+        final List<CommentRs> comments = webTestClient.get().uri("/api/v1/comments")
+            .exchange()
+            .expectStatus().isOk()
+            .expectBody(responseType)
+            .returnResult()
+            .getResponseBody();
+
+        assertThat(comments).hasSize(1);
+        assertThat(comments.get(0))
+            .isEqualTo(CommentRs.builder()
+                .id(1L)
+                .value("Hello")
+                .build());
     }
 
     @Test
     void deleteCommentShouldWork() {
         final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request1), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(PostRs.class)
+            .getResponseBody()
+            .blockFirst();
+
         final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
-        testRestTemplate.delete("/api/v1/comments/{id}", 1L);
+        webTestClient.post().uri("/api/v1/comments")
+            .body(Mono.just(request2), AddCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
+
+        webTestClient.delete().uri("/api/v1/comments/{id}", 1L)
+            .exchange()
+            .expectStatus().isOk();
 
         assertThat(commentRepository.findById(1L)).isEmpty();
     }
@@ -126,28 +162,43 @@ public class CommentControllerTest extends IntegrationTestBase {
     @Test
     void updateCommentShouldWork() {
         final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
+        webTestClient.post().uri("/api/v1/posts")
+            .body(Mono.just(request1), AddPostRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(PostRs.class)
+            .getResponseBody()
+            .blockFirst();
+
         final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+        webTestClient.post().uri("/api/v1/comments")
+            .body(Mono.just(request2), AddCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
+
         UpdateCommentRq updateCommentRq = UpdateCommentRq.builder()
+            .comment("Hello2")
             .id(1L)
-            .comment("Hello1")
             .build();
 
-        ResponseEntity<CommentRs> entity = testRestTemplate.exchange(
-            "/api/v1/comments",
-            HttpMethod.PUT,
-            new HttpEntity<>(updateCommentRq),
-            CommentRs.class
-        );
+        webTestClient.put().uri("/api/v1/comments")
+            .body(Mono.just(updateCommentRq), UpdateCommentRq.class)
+            .exchange()
+            .expectStatus().isOk()
+            .returnResult(CommentRs.class)
+            .getResponseBody()
+            .blockFirst();
 
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(commentRepository.findById(1L).get())
             .isEqualTo(Comment.builder()
                 .id(1L)
-                .value("Hello1")
+                .value("Hello3")
                 .build());
+
+
     }
 }
+
