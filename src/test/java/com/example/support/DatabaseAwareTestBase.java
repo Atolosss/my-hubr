@@ -1,11 +1,13 @@
 package com.example.support;
 
+import com.example.initializer.PostgreSqlInitializer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Objects;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ContextConfiguration(initializers = PostgreSqlInitializer.class)
 @ActiveProfiles("test")
 public abstract class DatabaseAwareTestBase {
     @Autowired
@@ -25,6 +28,13 @@ public abstract class DatabaseAwareTestBase {
     protected abstract String getSchema();
 
     protected abstract Set<String> getTables();
+
+    protected void executeInTransaction(final Runnable runnable) {
+        transactionTemplate.execute(status -> {
+            runnable.run();
+            return null;
+        });
+    }
 
     @BeforeEach
     void check() {

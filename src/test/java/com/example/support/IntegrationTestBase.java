@@ -1,28 +1,31 @@
 package com.example.support;
 
-import com.example.initializer.PostgreSqlInitializer;
+import com.example.model.entity.Post;
 import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.util.Set;
 
-@ActiveProfiles("test")
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = PostgreSqlInitializer.class)
 public class IntegrationTestBase extends DatabaseAwareTestBase {
     @LocalServerPort
     protected int localPort;
-
     @Autowired
     protected PostRepository postRepository;
-
     @Autowired
     protected CommentRepository commentRepository;
+    @Autowired
+    protected WebTestClient webTestClient;
+
+    @BeforeEach
+    void beforeEach() {
+        webTestClient = WebTestClient.bindToServer()
+            .baseUrl("http://localhost:" + localPort)
+            .build();
+    }
 
     @Override
     protected String getSchema() {
@@ -33,4 +36,9 @@ public class IntegrationTestBase extends DatabaseAwareTestBase {
     protected Set<String> getTables() {
         return Set.of("comment", "post");
     }
+
+    protected void createPost(final Post post) {
+        postRepository.save(post);
+    }
+
 }

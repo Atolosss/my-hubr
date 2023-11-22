@@ -33,8 +33,8 @@ public class PostService {
     public List<PostRs> getPostsBetweenDates(final LocalDateTime startDate, final LocalDateTime endDate) {
         return postRepository.findAll()
             .stream()
-            .filter(post -> post.getCreateDateTime().isAfter(startDate)
-                && post.getCreateDateTime().isBefore(endDate))
+            .filter(post -> post.getAudit().getCreateDateTime().isAfter(startDate)
+                && post.getAudit().getCreateDateTime().isBefore(endDate))
             .map(postMapper::toPostRs)
             .toList();
     }
@@ -43,11 +43,11 @@ public class PostService {
         final Post post = postRepository.findById(id)
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
 
-        if (!includeComments) {
-            return postMapper.toPostRsWithoutComments(postMapper.toPostWithoutComments(post));
-        } else {
+        if (includeComments) {
             return postMapper.toPostRs(post);
+
         }
+        return postMapper.toPostRsWithoutComments(postMapper.toPostWithoutComments(post));
     }
 
     public PostRs save(final AddPostRq addPost) {

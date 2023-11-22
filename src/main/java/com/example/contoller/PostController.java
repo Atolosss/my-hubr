@@ -38,7 +38,7 @@ public class PostController {
         return postService.getPost(id, includeComments);
     }
 
-    @GetMapping("/")
+    @GetMapping("/between-dates")
     public List<PostRs> getPostsBetweenDates(
         @RequestParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime startDate,
         @RequestParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) final LocalDateTime endDate) {

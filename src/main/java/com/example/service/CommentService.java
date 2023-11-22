@@ -41,7 +41,7 @@ public class CommentService {
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT, readOnly = false)
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
     public CommentRs save(final AddCommentRq request) {
         final Comment comment = postRepository.findById(request.getPostId())
             .map(post -> commentMapper.toComment(request, post))
@@ -56,7 +56,7 @@ public class CommentService {
         commentRepository.deleteById(id);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT, readOnly = false)
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
     public CommentRs update(final UpdateCommentRq request) {
         final Comment comment = commentRepository.findById(request.getId())
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, request.getId()));

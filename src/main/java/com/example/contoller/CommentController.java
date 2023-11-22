@@ -29,7 +29,7 @@ public class CommentController {
         return commentService.findAll(sort);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("{id}")
     public CommentRs get(@PathVariable final Long id) {
         return commentService.findById(id);
     }
@@ -44,7 +44,7 @@ public class CommentController {
         return commentService.update(request);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("{id}")
     public void delete(@PathVariable final Long id) {
         commentService.deleteById(id);
     }

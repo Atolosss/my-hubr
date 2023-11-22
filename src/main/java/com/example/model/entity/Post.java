@@ -8,15 +8,13 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +24,7 @@ import java.util.List;
 @Getter
 @Setter
 @ToString
+@EqualsAndHashCode(callSuper = true)
 
 @Entity
 @Table(name = "post")
@@ -36,13 +35,7 @@ public class Post extends BaseEntity {
 
     private String description;
 
-    @CreationTimestamp
-    @Column(name = "create_date_time", updatable = false, nullable = false)
-    private LocalDateTime createDateTime;
-
-    @Column(name = "update_date_time")
-    @UpdateTimestamp
-    private LocalDateTime updateDateTime;
+    private Audit audit;
 
     @Builder.Default
     @ToString.Exclude

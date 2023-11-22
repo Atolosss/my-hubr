@@ -1,153 +1,185 @@
 package com.example.controllers;
 
 import com.example.model.dto.AddCommentRq;
-import com.example.model.dto.AddPostRq;
 import com.example.model.dto.CommentRs;
-import com.example.model.dto.PostRs;
 import com.example.model.dto.UpdateCommentRq;
 import com.example.model.entity.Comment;
+import com.example.model.entity.Post;
 import com.example.support.DataProvider;
 import com.example.support.IntegrationTestBase;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@ActiveProfiles("test")
-public class CommentControllerTest extends IntegrationTestBase {
-
-    @Autowired
-    private RestTemplateBuilder restTemplateBuilder;
-    @Autowired
-    private TestRestTemplate testRestTemplate;
-
-    @BeforeEach
-    void beforeEach() {
-        restTemplateBuilder = new RestTemplateBuilder()
-            .rootUri("http://localhost:" + localPort);
-        testRestTemplate = new TestRestTemplate(restTemplateBuilder);
-    }
+class CommentControllerTest extends IntegrationTestBase {
 
     @Test
-    void addCommentShouldWork() {
-        final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        final ResponseEntity<PostRs> entity1 = testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        final ResponseEntity<CommentRs> entity2 = testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+    void postCommentShouldWork() {
+        final Post post = DataProvider.preparePost(List.of()).build();
+        createPost(post);
 
-        assertThat(entity2)
-            .extracting(HttpEntity::getBody)
+        final AddCommentRq request = DataProvider.prepareAddCommentRq()
+            .postId(post.getId())
+            .build();
+
+        assertThat(postComment(request, 200))
             .isEqualTo(CommentRs.builder()
                 .id(1L)
                 .value("Hello")
                 .build());
 
-        assertThat(commentRepository.findById(1L).get())
+        executeInTransaction(() -> assertThat(commentRepository.findAll())
+            .first()
+            .usingRecursiveComparison()
+            .ignoringFields("post", "audit")
             .isEqualTo(Comment.builder()
                 .id(1L)
                 .value("Hello")
-                .post(postRepository.findById(entity1.getBody().getId()).get())
-                .build());
+                .build()));
+
     }
 
     @Test
     void getCommentShouldWork() {
-        final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
-
-        final ResponseEntity<CommentRs> entity2 = testRestTemplate.getForEntity("/api/v1/comments/{id}",
-            CommentRs.class, 1L);
-
-        assertThat(entity2.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity2.getBody())
+        final Comment comment = createPostAndRetrieveSecondComment();
+        assertThat(getComment(comment.getId(), 200))
+            .usingRecursiveComparison()
             .isEqualTo(CommentRs.builder()
-                .id(1L)
-                .value("Hello")
+                .id(comment.getId())
+                .value(comment.getValue())
                 .build());
     }
 
     @Test
     void getCommentsShouldWork() {
-        final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
+        final Comment comment1 = Comment.builder()
+            .value("comment first")
+            .build();
+        final Comment comment2 = Comment.builder()
+            .value("comment second")
+            .build();
+        final Post post = DataProvider.preparePost(List.of(comment1, comment2))
+            .build();
 
-        ResponseEntity<List<CommentRs>> entity1 = testRestTemplate.exchange(
-            "/api/v1/comments",
-            HttpMethod.GET,
-            null,
-            new ParameterizedTypeReference<List<CommentRs>>() {
-            });
-        List<CommentRs> comments = new ArrayList<>();
-        comments.add(CommentRs.builder()
-            .id(1L)
-            .value("Hello")
-            .build());
+        createPost(post);
 
-        assertThat(entity1.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(entity1.getBody())
-            .isEqualTo(comments);
+        assertThat(getComments(200))
+            .usingRecursiveComparison()
+            .isEqualTo(List.of(
+                CommentRs.builder()
+                    .id(comment1.getId())
+                    .value(comment1.getValue())
+                    .build(),
+                CommentRs.builder()
+                    .id(comment2.getId())
+                    .value(comment2.getValue())
+                    .build()
+            ));
     }
 
     @Test
     void deleteCommentShouldWork() {
-        final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
-        testRestTemplate.delete("/api/v1/comments/{id}", 1L);
+        final Comment comment = createPostAndRetrieveSecondComment();
+        deleteComment(comment.getId());
 
-        assertThat(commentRepository.findById(1L)).isEmpty();
+        assertThat(commentRepository.findById(comment.getId()))
+            .isEmpty();
     }
 
     @Test
     void updateCommentShouldWork() {
-        final AddPostRq request1 = DataProvider.prepareAddPostRq().build();
-        testRestTemplate.postForEntity("/api/v1/posts",
-            request1, PostRs.class);
-        final AddCommentRq request2 = DataProvider.prepareAddCommentRq().build();
-        testRestTemplate.postForEntity("/api/v1/comments",
-            request2, CommentRs.class);
-        UpdateCommentRq updateCommentRq = UpdateCommentRq.builder()
-            .id(1L)
-            .comment("Hello1")
+        final Comment comment = createPostAndRetrieveSecondComment();
+
+        final UpdateCommentRq updateCommentRq = DataProvider.prepareUpdateCommentRq()
+            .id(comment.getId())
             .build();
-
-        ResponseEntity<CommentRs> entity = testRestTemplate.exchange(
-            "/api/v1/comments",
-            HttpMethod.PUT,
-            new HttpEntity<>(updateCommentRq),
-            CommentRs.class
-        );
-
-        assertThat(entity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(commentRepository.findById(1L).get())
+        assertThat(putComment(updateCommentRq))
+            .isNotNull();
+        assertThat(commentRepository.findById(comment.getId()))
+            .isNotEmpty()
+            .get()
+            .usingRecursiveComparison()
+            .ignoringFields("post", "audit")
             .isEqualTo(Comment.builder()
-                .id(1L)
+                .id(comment.getId())
                 .value("Hello1")
                 .build());
+    }
+
+    private CommentRs postComment(final AddCommentRq request, final int status) {
+        return webTestClient.post()
+            .uri(uriBuilder -> uriBuilder
+                .pathSegment("api", "v1", "comments")
+                .build())
+            .bodyValue(request)
+            .exchange()
+            .expectStatus().isEqualTo(status)
+            .expectBody(CommentRs.class)
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private CommentRs getComment(final Long id, final int status) {
+        return webTestClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .pathSegment("api", "v1", "comments", String.valueOf(id))
+                .build())
+            .exchange()
+            .expectStatus().isEqualTo(status)
+            .expectBody(CommentRs.class)
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private List<CommentRs> getComments(final int status) {
+        return webTestClient.get()
+            .uri(uriBuilder -> uriBuilder
+                .pathSegment("api", "v1", "comments")
+                .build())
+            .exchange()
+            .expectStatus().isEqualTo(status)
+            .expectBody(new ParameterizedTypeReference<List<CommentRs>>() {
+            })
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private void deleteComment(final Long id) {
+        webTestClient.delete()
+            .uri(uriBuilder -> uriBuilder
+                .pathSegment("api", "v1", "comments", String.valueOf(id))
+                .build())
+            .exchange()
+            .expectStatus().isEqualTo(200);
+    }
+
+    private CommentRs putComment(final UpdateCommentRq updateCommentRq) {
+        return webTestClient.put()
+            .uri(uriBuilder -> uriBuilder
+                .pathSegment("api", "v1", "comments")
+                .build())
+            .bodyValue(updateCommentRq)
+            .exchange()
+            .expectStatus().isEqualTo(200)
+            .expectBody(CommentRs.class)
+            .returnResult()
+            .getResponseBody();
+    }
+
+    private Comment createPostAndRetrieveSecondComment() {
+        final Comment comment1 = Comment.builder()
+            .value("comment first")
+            .build();
+        final Comment comment2 = Comment.builder()
+            .value("comment second")
+            .build();
+        final Post post = DataProvider.preparePost(List.of(comment1, comment2))
+            .build();
+
+        createPost(post);
+        return comment2;
     }
 }
