@@ -52,7 +52,7 @@ public abstract class DatabaseAwareTestBase {
     }
 
     protected String tableNameWithSchema(final String tableName) {
-        var schema = getSchema();
+        final var schema = getSchema();
         return tableName.startsWith(schema) ? tableName : String.format("%s.%s", schema, tableName);
     }
 

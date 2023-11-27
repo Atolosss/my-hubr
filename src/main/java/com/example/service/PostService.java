@@ -41,7 +41,7 @@ public class PostService {
 
     public PostRs getPost(final Long id, final boolean includeComments) {
         final Post post = postRepository.findById(id)
-            .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
+            .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_002, id));
 
         if (includeComments) {
             return postMapper.toPostRs(post);

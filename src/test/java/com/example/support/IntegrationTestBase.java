@@ -3,6 +3,8 @@ package com.example.support;
 import com.example.model.entity.Post;
 import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
+import com.example.service.CommentService;
+import com.example.service.PostService;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.web.server.LocalServerPort;
@@ -19,6 +21,10 @@ public class IntegrationTestBase extends DatabaseAwareTestBase {
     protected CommentRepository commentRepository;
     @Autowired
     protected WebTestClient webTestClient;
+    @Autowired
+    protected PostService postService;
+    @Autowired
+    protected CommentService commentService;
 
     @BeforeEach
     void beforeEach() {
