@@ -12,6 +12,7 @@ import com.example.repository.CommentRepository;
 import com.example.repository.PostRepository;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -21,11 +22,14 @@ import java.util.Comparator;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class CommentService {
     private final CommentMapper commentMapper;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+
+    @Lazy
+    private final CommentService self;
 
     public List<CommentRs> findAll(@Nullable final CommentSortType sort) {
         final Comparator<Comment> comparator = sort != null ? sort.getComparator() : CommentSortType.ID.getComparator();
@@ -41,8 +45,12 @@ public class CommentService {
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_001, id));
     }
 
-    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
     public CommentRs save(final AddCommentRq request) {
+        return self.saveLogic(request);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED, isolation = Isolation.DEFAULT)
+    public CommentRs saveLogic(AddCommentRq request) {
         final Comment comment = postRepository.findById(request.getPostId())
             .map(post -> commentMapper.toComment(request, post))
             .orElseThrow(() -> new ServiceException(ErrorCode.ERR_CODE_002, request.getPostId()));
